@@ -2,6 +2,11 @@ import { useContext, useEffect, useState } from "react";
 import { CommonContext } from "../../context/CommonContext";
 import { ProjectContext } from "../../context/ProjectContext";
 import CommonSnack from "../CommonSnack";
+import { bibleBooks } from "../BibleBooks";
+import FormGroup from "@material-ui/core/FormGroup";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import Checkbox from "@material-ui/core/Checkbox";
+import Grid from "@material-ui/core/Grid";
 
 const ProjectUpdate = () => {
     const { classes, handleClose, id, handleOpenSnack } =
@@ -14,16 +19,25 @@ const ProjectUpdate = () => {
         projectName,
         setProjectName,
     } = useContext(ProjectContext);
-    const [checked, setChecked] = useState(false);
-    const [book, setBook] = useState([]);
+    const [books, setBooks] = useState(bibleBooks);
 
     const handleUpdate = () => {
-        const projects = { checked };
-        fetch(`http://localhost:8000/bibleBooks/${id}`, {
-            method: "POST",
+        const checkedBox = { sourceLang, targetLang, projectName, books };
+        fetch(`http://localhost:8000/projects/${id}`, {
+            method: "PUT",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(projects),
+            body: JSON.stringify(checkedBox),
         });
+    };
+
+    const onCheck = (e) => {
+        let tempBooks = books.map((item) => {
+            if (item.book === e.target.name) {
+                item.isChecked = e.target.checked;
+            }
+            return item;
+        });
+        return setBooks(tempBooks);
     };
 
     useEffect(() => {
@@ -33,16 +47,9 @@ const ProjectUpdate = () => {
                 setSourceLang(data.sourceLang);
                 setTargetLang(data.targetLang);
                 setProjectName(data.projectName);
+                setBooks(data.books ? data.books : bibleBooks);
             });
-
-        fetch(`http://localhost:8000/bibleBooks`)
-            .then((response) => response.json())
-            .then((data) => {
-                setBook(data);
-            });
-    }, [setSourceLang, setTargetLang, setProjectName, id]);
-
-    console.log(checked);
+    }, [setSourceLang, setTargetLang, setProjectName, setBooks, id]);
 
     return (
         <form className={classes.paper} onSubmit={handleUpdate}>
@@ -72,18 +79,28 @@ const ProjectUpdate = () => {
                 className="form-control"
                 onChange={(e) => setProjectName(e.target.value)}
             />
-            <div className="checkbox-main-div">
-                {book.map((item) => (
-                    <div className="checkbpx-div">
-                        <input
-                            type="checkbox"
-                            value={item.checked}
-                            onChange={() => setChecked(!checked)}
-                        />
-                        {item.abbreviation}
-                    </div>
+            <br></br>
+            <hr />
+            <Grid container className="checkbox-main-div">
+                {books.map((element) => (
+                    <Grid item xs={2}>
+                        <FormGroup row>
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        checked={element.isChecked}
+                                        onChange={onCheck}
+                                        name={element.book}
+                                        value={element.isChecked}
+                                        color="primary"
+                                    />
+                                }
+                                label={element.abbreviation}
+                            />
+                        </FormGroup>
+                    </Grid>
                 ))}
-            </div>
+            </Grid>
             <div className="button-div">
                 <button onClick={handleClose}>Cancel</button>
                 <button onClick={() => handleOpenSnack("Form added!")}>

@@ -27,12 +27,6 @@ code {
     justify-content: space-between;
 }
 .checkbox-main-div {
-    display: flex;
-    flex-wrap: wrap;
-}
-.checkbpx-div {
-    padding-left: 2px;
-    padding-right: 2px;
-    margin-left: 2px;
-    margin-right: 2px;
+    overflow-y: auto;
+    height: 135px;
 }
